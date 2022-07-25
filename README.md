@@ -1,6 +1,4 @@
 # pybindtest
-my own journey to learn pybind11 and conan
-
 
 for making things running:
 ```ruby
