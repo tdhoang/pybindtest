@@ -3,10 +3,10 @@ project(pybind11_project CXX)
 # https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+#set(CMAKE_CXX_EXTENSIONS OFF)
 
 # expected behaviour
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++lastest")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 
 # Enable link time optimization and set the default symbol
 # visibility to hidden (very important to obtain small binaries)
@@ -26,33 +26,33 @@ find_package(pybind11 CONFIG)
 
 
 # Python method:
-pybind11_add_module(${PROJECT_NAME} src/example.cpp)
+pybind11_add_module(example src/example.cpp)
 
 # Don't add a 'lib' prefix to the shared library
-set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
+set_target_properties(example PROPERTIES PREFIX "")
 
 if (WIN32)
   if (MSVC)
     # /bigobj is needed for bigger binding projects due to the limit to 64k
     # addressable sections. /MP enables multithreaded builds (relevant when
     # there are many files).
-    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "/MP /bigobj ")
+    set_target_properties(example PROPERTIES COMPILE_FLAGS "/MP /bigobj ")
 
     if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
       # Enforce size-based optimization and link time code generation on MSVC
       # (~30% smaller binaries in experiments).
-      set_target_properties(${PROJECT_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS "/Os /GL ")
-      set_target_properties(${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "/LTCG ")
+      set_target_properties(example APPEND_STRING PROPERTY COMPILE_FLAGS "/Os /GL ")
+      set_target_properties(example APPEND_STRING PROPERTY LINK_FLAGS "/LTCG ")
     endif()
   endif()
 
   # .PYD file extension on Windows
-  set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".pyd")
+  set_target_properties(example PROPERTIES SUFFIX ".pyd")
 
   # Link against the Python shared library
-  #target_link_libraries(${PROJECT_NAME} ${PYTHON_LIBRARY})
+  #target_link_libraries(example ${PYTHON_LIBRARY})
   # Use the global target
-  #target_link_libraries(${PROJECT_NAME} pybind11::module)
+  #target_link_libraries(example pybind11::module)
 elseif (UNIX)
   # It's quite common to have multiple copies of the same Python version
   # installed on one's system. E.g.: one copy from the OS and another copy
@@ -69,18 +69,18 @@ elseif (UNIX)
   # import time.
 
   # .SO file extension on Linux/Mac OS
-  set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".so")
+  set_target_properties(example PROPERTIES SUFFIX ".so")
 
   # Strip unnecessary sections of the binary on Linux/Mac OS
   if(APPLE)
-    set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_RPATH ".")
-    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup ")
+    set_target_properties(example PROPERTIES MACOSX_RPATH ".")
+    set_target_properties(example PROPERTIES LINK_FLAGS "-undefined dynamic_lookup ")
     if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
-      add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND strip -u -r ${PROJECT_BINARY_DIR}/example.so)
+      add_custom_command(TARGET example POST_BUILD COMMAND strip -u -r ${PROJECT_BINARY_DIR}/example.so)
     endif()
   else()
     if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
-      add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND strip ${PROJECT_BINARY_DIR}/example.so)
+      add_custom_command(TARGET example POST_BUILD COMMAND strip ${PROJECT_BINARY_DIR}/example.so)
     endif()
   endif()
 endif()
